@@ -235,6 +235,8 @@ export class RefreshScheduler {
     compilerApi: CompilerApi,
     queryingOptions: PreAggregationsQueryingOptions
   ) {
+    const orchestratorApi = this.serverCore.getOrchestratorApi(context);
+    const preAggregationsLoadCacheByDataSource = {};
     const preAggregationsQueringOptions = queryingOptions.preAggregations.reduce((obj, p) => {
       obj[p.id] = p;
       return obj;
@@ -271,12 +273,16 @@ export class RefreshScheduler {
 
       const partitions: any = queriesForPreAggregation && await Promise.all(
         queriesForPreAggregation.map(
-          query => compilerApi
-            .getSql(query)
-            .then(sql => ({
+          async query => {
+            const sql = await orchestratorApi.expandPartitionsInPreAggregations({
+              ...(await compilerApi.getSql(query)),
+              preAggregationsLoadCacheByDataSource
+            });
+            return {
               ...query,
               sql: sql.preAggregations.find(p => p.preAggregationId === preAggregation.id)
-            }))
+            };
+          }
         )
       );
 
