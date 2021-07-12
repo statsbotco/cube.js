@@ -20,10 +20,10 @@
       "path": "packages/cubejs-api-gateway"
     },
     {
-      "path": "packages/cubejs-schema-compiler"
+      "path": "packages/cubejs-query-orchestrator"
     },
     {
-      "path": "packages/cubejs-query-orchestrator"
+      "path": "packages/cubejs-schema-compiler"
     },
     {
       "path": "packages/cubejs-druid-driver"
