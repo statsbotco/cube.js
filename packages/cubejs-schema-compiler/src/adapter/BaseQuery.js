@@ -1022,7 +1022,7 @@ export class BaseQuery {
       ...subQueryJoins
     ]);
     return `SELECT ${columnsForSelect} FROM ${joinSql}` +
-      (!this.safeEvaluateSymbolContext().ungrouped && this.groupByClause() || '');
+      (!this.safeEvaluateSymbolContext().ungrouped && this.groupByClause(true) || '');
   }
 
   checkShouldBuildJoinForMeasureSelect(measures, keyCubeName) {
@@ -1183,7 +1183,7 @@ export class BaseQuery {
     );
   }
 
-  groupByClause() {
+  groupByClause(isKeysSubquery = false) {
     if (this.ungrouped) {
       return '';
     }
