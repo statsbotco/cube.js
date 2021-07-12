@@ -26,6 +26,7 @@ async function startProcess(pathToExecutable: string, config: Readonly<StartProc
 
   const cubeStore = spawn(pathToExecutable, {
     env,
+    detached: false,
   });
 
   return new Promise<ChildProcess>((resolve, reject) => {
