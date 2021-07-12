@@ -1732,7 +1732,9 @@ export class BaseQuery {
             this.evaluateSql(cube, cubeFromPath.refreshKey.sql),
             {
               external: false,
-              renewalThreshold: this.defaultRefreshKeyRenewalThreshold()
+              renewalThreshold: cubeFromPath.refreshKey.every
+                ? this.refreshKeyRenewalThresholdForInterval(cubeFromPath.refreshKey, false)
+                : this.defaultRefreshKeyRenewalThreshold()
             },
             this
           ];
@@ -2134,7 +2136,9 @@ export class BaseQuery {
                 preAggregationQueryForSql.evaluateSql(cube, preAggregation.refreshKey.sql)
               ).concat({
                 external: false,
-                renewalThreshold: this.defaultRefreshKeyRenewalThreshold(),
+                renewalThreshold: preAggregation.refreshKey.every
+                  ? this.refreshKeyRenewalThresholdForInterval(preAggregation.refreshKey, false)
+                  : this.defaultRefreshKeyRenewalThreshold(),
               })
             ];
           }
@@ -2238,15 +2242,27 @@ export class BaseQuery {
     );
   }
 
-  refreshKeyRenewalThresholdForInterval(refreshKey) {
+  refreshKeyRenewalThresholdForInterval(refreshKey, limitedWithMax = true) {
     const { every } = refreshKey;
 
     if (/^(\d+) (second|minute|hour|day|week)s?$/.test(every)) {
-      return Math.max(Math.min(Math.round(this.parseSecondDuration(every) / 10), 300), 1);
+      const threshold = Math.max(Math.round(this.parseSecondDuration(every) / 10), 1);
+
+      if (limitedWithMax) {
+        return Math.min(threshold, 300);
+      }
+
+      return threshold;
     }
 
     const { interval } = this.calcIntervalForCronString(refreshKey);
-    return Math.max(Math.min(Math.round(interval / 10), 300), 1);
+    const threshold = Math.max(Math.round(interval / 10), 1);
+
+    if (limitedWithMax) {
+      return Math.min(threshold, 300);
+    }
+
+    return threshold;
   }
 
   preAggregationStartEndQueries(cube, preAggregation) {
